@@ -39,13 +39,15 @@ class FollowSerializer(serializers.ModelSerializer):
         read_only_fields = ('user',)
 
     def validate_following_id(self, value):
-        if self.context['request'].user.id == value:
+        request_user = self.context['request'].user
+        if request_user.id == value:
             raise serializers.ValidationError(
                 'Нельзя подписаться на самого себя')
         if not User.objects.filter(id=value).exists():
-            raise serializers.ValidationError('Пользователь не найден')
+            raise serializers.ValidationError(
+                'Пользователь не найден')
         if Follow.objects.filter(
-            user=self.context['request'].user,
+            user=request_user,
             following_id=value
         ).exists():
             raise serializers.ValidationError(
